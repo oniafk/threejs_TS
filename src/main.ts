@@ -6,20 +6,22 @@ import { GUI } from "dat.gui";
 
 const basePath = "/penguins-skybox-pack/penguins/";
 
-const scene = new THREE.Scene();
-// scene.background = new THREE.Color(0x135462); // background color can be color or image with the TextureLoader
-scene.background = new THREE.CubeTextureLoader()
+const sceneA = new THREE.Scene();
+sceneA.background = new THREE.Color(0x135462); // background color can be color or image with the TextureLoader
+
+const sceneB = new THREE.Scene();
+sceneB.background = new THREE.CubeTextureLoader()
   .setPath(basePath)
   .load([
-    "arid_rt.jpg",
-    "arid_lf.jpg",
-    "arid_up.jpg",
-    "arid_dn.jpg",
     "arid_ft.jpg",
     "arid_bk.jpg",
+    "arid_up.jpg",
+    "arid_dn.jpg",
+    "arid_rt.jpg",
+    "arid_lf.jpg",
   ]);
 
-scene.backgroundBlurriness = 0.2; // the higher the value the more blurry the background will be
+// sceneB.backgroundBlurriness = 0.2; // the higher the value the more blurry the background will be
 
 //? the order for the images is the same as the order of the faces of the cube
 //? the order is: right, left, top, bottom, front, back
@@ -55,7 +57,7 @@ const material = new THREE.MeshBasicMaterial({
 });
 
 const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+sceneA.add(cube);
 
 const stats = new Stats();
 stats.showPanel(1); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -73,6 +75,19 @@ const cameraFolder = gui.addFolder("Camera");
 cameraFolder.add(camera.position, "z", 0, 20);
 cameraFolder.open();
 
+let activeScene = sceneA;
+const setScene = {
+  sceneA: () => {
+    activeScene = sceneA;
+  },
+  sceneB: () => {
+    activeScene = sceneB;
+  },
+};
+
+gui.add(setScene, "sceneA").name("Scene A");
+gui.add(setScene, "sceneB").name("Scene B");
+
 function animate() {
   requestAnimationFrame(animate);
 
@@ -82,7 +97,7 @@ function animate() {
   stats.end(); // we can now measure the time it takes to render the scene up to here
   // this means that stats will measure the performance of the code between stats.begin() and stats.end() just the animation code in this case
 
-  renderer.render(scene, camera);
+  renderer.render(activeScene, camera);
 
   stats.update();
 }
