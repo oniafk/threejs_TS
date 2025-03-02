@@ -4,7 +4,25 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Stats from "three/addons/libs/stats.module.js";
 import { GUI } from "dat.gui";
 
+const basePath = "/penguins-skybox-pack/penguins/";
+
 const scene = new THREE.Scene();
+// scene.background = new THREE.Color(0x135462); // background color can be color or image with the TextureLoader
+scene.background = new THREE.CubeTextureLoader()
+  .setPath(basePath)
+  .load([
+    "arid_rt.jpg",
+    "arid_lf.jpg",
+    "arid_up.jpg",
+    "arid_dn.jpg",
+    "arid_ft.jpg",
+    "arid_bk.jpg",
+  ]);
+
+scene.backgroundBlurriness = 0.2; // the higher the value the more blurry the background will be
+
+//? the order for the images is the same as the order of the faces of the cube
+//? the order is: right, left, top, bottom, front, back
 
 const camera = new THREE.PerspectiveCamera(
   75,
