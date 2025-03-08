@@ -4,28 +4,16 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import Stats from "three/addons/libs/stats.module.js";
-// import hdr from './img/venice_sunset_1k.hdr'
-// import image from './img/grid.png'
-// import model from './models/suzanne_no_material.glb'
 
 const scene = new THREE.Scene();
 
 const hdr = "https://sbcode.net/img/venice_sunset_1k.hdr";
-const image = "https://sbcode.net/img/grid.png";
-const model = "https://sbcode.net/models/suzanne_no_material.glb";
-
-// const hdr = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/equirectangular/venice_sunset_1k.hdr'
-// const image = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/uv_grid_opengl.jpg'
-// const model = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/Xbot.glb'
-
-// const hdr = 'img/venice_sunset_1k.hdr'
-// const image = 'img/grid.png'
-// const model = 'models/suzanne_no_material.glb'
 
 new RGBELoader().load(hdr, (texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = texture;
   scene.background = texture;
+  scene.backgroundBlurriness = 1.0;
 });
 
 const camera = new THREE.PerspectiveCamera(
@@ -34,7 +22,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(-2, 0.5, 2);
+camera.position.set(2, 1, -2);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -48,22 +36,28 @@ window.addEventListener("resize", () => {
 });
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.y = 0.75;
 controls.enableDamping = true;
 
-const material = new THREE.MeshStandardMaterial();
-material.map = new THREE.TextureLoader().load(image);
-//material.map.colorSpace = THREE.SRGBColorSpace
-
-const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), material);
-plane.rotation.x = -Math.PI / 2;
-plane.position.y = -1;
-scene.add(plane);
-
-new GLTFLoader().load(model, (gltf) => {
-  gltf.scene.traverse((child) => {
-    (child as THREE.Mesh).material = material;
+const loader = new GLTFLoader();
+loader.load("models/suv_body.glb", (gltf) => {
+  const suvBody = gltf.scene;
+  loader.load("models/suv_wheel.glb", function (gltf) {
+    const wheels = [
+      gltf.scene,
+      gltf.scene.clone(),
+      gltf.scene.clone(),
+      gltf.scene.clone(),
+    ];
+    wheels[0].position.set(-0.65, 0.2, -0.77);
+    wheels[1].position.set(0.65, 0.2, -0.77);
+    wheels[1].rotateY(Math.PI);
+    wheels[2].position.set(-0.65, 0.2, 0.57);
+    wheels[3].position.set(0.65, 0.2, 0.57);
+    wheels[3].rotateY(Math.PI);
+    suvBody.add(...wheels);
   });
-  scene.add(gltf.scene);
+  scene.add(suvBody);
 });
 
 const stats = new Stats();
